@@ -1,0 +1,48 @@
+start       : section+                                   
+section     : section_header _NL line*
+
+line        : meta? statement // node
+            | _NL // blank line
+
+?statement  : rand_stmt
+            | goto_stmt
+            | call_stmt
+            | return_stmt
+            | choice_block
+            | if_stmt
+            | run_stmt
+            | say_stmt
+
+rand_stmt   : "RAND" node_id+ _NL
+goto_stmt   : "GOTO" node_id _NL
+call_stmt   : "CALL" node_id _NL
+return_stmt : "RETURN"  _NL
+choice_block : "CHOICE" _NL choice_option+
+choice_option : code_block? dialog_line node_id _NL
+if_stmt     : "IF" code_block node_id node_id? _NL
+run_stmt    : "RUN" code_block _NL
+say_stmt    : CNAME ":" dialog_line next_link? _NL
+
+// ---------- helpers ----------
+?section_header : "[" CNAME "]"
+dialog_line : STRING line_id?
+code_block  : "|" CODE "|"
+node_id     : "@" CNAME
+line_id     : "%" CNAME
+next_link   : ARROW node_id
+meta        : node_id _NL | node_id tag_list _NL | tag_list _NL
+?tag        : "#" TAG
+tag_list    : tag+
+
+ARROW       : "->"
+CODE        : /[^|]+/
+TAG         : /[a-zA-Z-_:]+/
+
+%import common.CNAME
+%import common.ESCAPED_STRING   -> STRING      // accepts "…", with \" escapes
+%import common.NEWLINE          -> _NL
+%import common.WS_INLINE
+%ignore WS_INLINE                               // skip normal spaces/tabs
+
+COMMENT     : ";" /[^\n]*/
+%ignore COMMENT

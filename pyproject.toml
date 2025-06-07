@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dgml"
+version = "0.1"
+dependencies = [
+  "PyYAML>=6.0.0",
+  "lark>=1.2.0",
+]
+requires-python = ">=3.10"
+authors = [
+  {name = "Joel Schumacher", email = "joelschum@gmail.com"},
+]
+maintainers = [
+  {name = "Joel Schumacher", email = "joelschum@gmail.com"},
+]
+description = "A dialogue toolkit for games"
+readme = "README.md"
+license = "MIT"
+
+[project.optional-dependencies]
+watch = ["watchdog"]
+
+[project.urls]
+Homepage = "https://github.com/pfirsich/dgml"
+Repository = "https://github.com/pfirsich/dgml.git"
+
+[project.scripts]
+dgml = "dgml.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["dgml"]
