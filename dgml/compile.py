@@ -1,5 +1,6 @@
 import json
 import hashlib
+import sys
 from dataclasses import dataclass
 
 import yaml
@@ -50,8 +51,14 @@ def text_to_json(frag):
         raise AssertionError("Invalid text fragment")
 
 
-def diag_line_to_json(line):
-    return {"line_id": line.line_id, "text": [text_to_json(frag) for frag in line.text]}
+def diag_line_to_json(section_meta, line):
+    jline = {
+        "line_id": line.line_id,
+        "text": [text_to_json(frag) for frag in line.text],
+    }
+    if line.line_id in section_meta:
+        jline["meta"] = section_meta.pop(line.line_id)
+    return jline
 
 
 def make_node(node, type, **kwargs):
@@ -67,6 +74,11 @@ def main(args):
     if args.config:
         with open(args.config) as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
+
+    meta = {}
+    if args.meta:
+        with open(args.meta) as f:
+            meta = json.load(f)
 
     sources = []
     for path in args.input:
@@ -85,6 +97,7 @@ def main(args):
 
     for src in sources:
         for section in src.sections:
+            section_meta = meta.get(section.name, {})
             nodes = []
             for node in section.nodes:
                 if isinstance(node, parser.RandNode):
@@ -99,7 +112,10 @@ def main(args):
                     opts = []
                     for opt in node.options:
                         opts.append(
-                            {"line": diag_line_to_json(opt.line), "dest": opt.dest}
+                            {
+                                "line": diag_line_to_json(section_meta, opt.line),
+                                "dest": opt.dest,
+                            }
                         )
                         if opt.cond:
                             opts[-1]["cond"] = expr_to_json(opt.cond)
@@ -123,7 +139,7 @@ def main(args):
                             node,
                             "say",
                             speaker_id=node.speaker_id,
-                            line=diag_line_to_json(node.line),
+                            line=diag_line_to_json(section_meta, node.line),
                             dest=node.dest,
                         )
                     )
@@ -133,6 +149,15 @@ def main(args):
             sections.append(
                 {"name": section.name, "source_file": src.path, "nodes": nodes}
             )
+
+    invalid_meta = []
+    for section_name, section_meta in meta.items():
+        invalid_meta.extend(list(section_meta.keys()))
+
+    if len(invalid_meta) > 0:
+        sys.exit(
+            f"Some metadata items don't belong to a line: {', '.join(invalid_meta)}"
+        )
 
     if "speaker_ids" in config:
         for speaker_id in speaker_ids:

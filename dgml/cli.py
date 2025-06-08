@@ -10,6 +10,7 @@ from .meta import main_set as main_meta_set, main_get as main_meta_get
 def add_compile_parser(subparsers):
     parser_compile = subparsers.add_parser("compile")
     parser_compile.add_argument("--config", "-c")
+    parser_compile.add_argument("--meta", "-m")
     parser_compile.add_argument("--output", "-o", default="compiled.json")
     parser_compile.add_argument("input", nargs="+")
     parser_compile.set_defaults(func=main_compile)
@@ -28,6 +29,7 @@ def add_lint_parser(subparsers):
     # * check markup tags are properly nested
     # * lint that node ids are unique
     # * check types in expressions
+    # * check markup is valid
     pass
 
 
@@ -56,10 +58,11 @@ def add_meta_parser(subparsers):
 
 
 def add_localize_parser(subparsers):
-    # dgml localize export de-de game_de-de.csv
+    # dgml localize extract file.dgml loc/de-de.json
+    # dgml localize export loc/de-de.json game_de-de.csv
     # node_id;speaker;text;localization comment;translated;status
     # status is DRAFT, TRANSLATED, EDITED, REWORK, FINAL
-    # dgml localize import de-de game_de-de.csv
+    # dgml localize import loc/de-de.json game_de-de.csv
     pass
 
 
