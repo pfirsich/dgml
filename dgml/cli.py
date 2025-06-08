@@ -9,8 +9,9 @@ from .meta import main_set as main_meta_set, main_get as main_meta_get
 
 def add_compile_parser(subparsers):
     parser_compile = subparsers.add_parser("compile")
-    parser_compile.add_argument("input", nargs="+")
+    parser_compile.add_argument("--config", "-c")
     parser_compile.add_argument("--output", "-o", default="compiled.json")
+    parser_compile.add_argument("input", nargs="+")
     parser_compile.set_defaults(func=main_compile)
 
 

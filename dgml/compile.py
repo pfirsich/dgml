@@ -2,6 +2,8 @@ import json
 import hashlib
 from dataclasses import dataclass
 
+import yaml
+
 from . import parser
 
 
@@ -61,6 +63,11 @@ def make_node(node, type, **kwargs):
 
 
 def main(args):
+    config = {}
+    if args.config:
+        with open(args.config) as f:
+            config = yaml.load(f, Loader=yaml.SafeLoader)
+
     sources = []
     for path in args.input:
         with open(path) as f:
@@ -82,13 +89,13 @@ def main(args):
             for node in section.nodes:
                 if isinstance(node, parser.RandNode):
                     nodes.append(make_node(node, "rand", nodes=node.nodes))
-                if isinstance(node, parser.GotoNode):
+                elif isinstance(node, parser.GotoNode):
                     nodes.append(make_node(node, "goto", dest=node.dest))
-                if isinstance(node, parser.CallNode):
+                elif isinstance(node, parser.CallNode):
                     nodes.append(make_node(node, "call", dest=node.dest))
-                if isinstance(node, parser.ReturnNode):
+                elif isinstance(node, parser.ReturnNode):
                     nodes.append(make_node(node, "return"))
-                if isinstance(node, parser.ChoiceNode):
+                elif isinstance(node, parser.ChoiceNode):
                     opts = []
                     for opt in node.options:
                         opts.append(
@@ -97,7 +104,7 @@ def main(args):
                         if opt.cond:
                             opts[-1]["cond"] = expr_to_json(opt.cond)
                     nodes.append(make_node(node, "choice", options=opts))
-                if isinstance(node, parser.IfNode):
+                elif isinstance(node, parser.IfNode):
                     nodes.append(
                         make_node(
                             node,
@@ -107,9 +114,9 @@ def main(args):
                             false_dest=node.false_dest,
                         )
                     )
-                if isinstance(node, parser.RunNode):
+                elif isinstance(node, parser.RunNode):
                     nodes.append(make_node(node, "run", code=expr_to_json(node.code)))
-                if isinstance(node, parser.SayNode):
+                elif isinstance(node, parser.SayNode):
                     speaker_ids.add(node.speaker_id)
                     nodes.append(
                         make_node(
@@ -120,16 +127,24 @@ def main(args):
                             dest=node.dest,
                         )
                     )
+                else:
+                    sys.exit(f"Unknown node type: {type(node).__name__}")
 
             sections.append(
                 {"name": section.name, "source_file": src.path, "nodes": nodes}
             )
 
+    if "speaker_ids" in config:
+        for speaker_id in speaker_ids:
+            if speaker_id not in config["speaker_ids"]:
+                sys.exit(f"Invalid speaker id: {speaker}")
+            speaker_ids = config["speaker_ids"]
+
     data = {
         "build_id": build_id.hexdigest(),
         "speaker_ids": list(speaker_ids),
         "sources": [{"path": src.path, "hash": src.source_hash} for s in sources],
-        "environment": [],
+        "environment": config.get("environment", {}),
         "sections": sections,
     }
 
