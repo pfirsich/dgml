@@ -54,7 +54,9 @@ def diag_line_to_json(line):
 
 def make_node(node, type, **kwargs):
     r = {"node_id": node.meta.node_id, "tags": node.meta.tags, "type": type}
-    r.update(kwargs)
+    for k, v in kwargs.items():
+        if v is not None:
+            r[k] = v
     return r
 
 
@@ -96,15 +98,15 @@ def main(args):
                             opts[-1]["cond"] = expr_to_json(opt.cond)
                     nodes.append(make_node(node, "choice", options=opts))
                 if isinstance(node, parser.IfNode):
-                    n = make_node(
-                        node,
-                        "if",
-                        cond=expr_to_json(node.cond),
-                        true_dest=node.true_dest,
+                    nodes.append(
+                        make_node(
+                            node,
+                            "if",
+                            cond=expr_to_json(node.cond),
+                            true_dest=node.true_dest,
+                            false_dest=node.false_dest,
+                        )
                     )
-                    if node.false_dest:
-                        n["false_dest"] = node.false_dest
-                    nodes.append(n)
                 if isinstance(node, parser.RunNode):
                     nodes.append(make_node(node, "run", code=expr_to_json(node.code)))
                 if isinstance(node, parser.SayNode):
@@ -115,6 +117,7 @@ def main(args):
                             "say",
                             speaker_id=node.speaker_id,
                             line=diag_line_to_json(node.line),
+                            dest=node.dest,
                         )
                     )
 

@@ -130,7 +130,10 @@ def play(env, node_map, nodes, idx):
                 idx += 1
         elif node["type"] == "say":
             print(f"{node['speaker_id']}: {render_text(env, node['line']['text'])}")
-            idx += 1
+            if "dest" in node:
+                idx = node_map[node["dest"]]
+            else:
+                idx += 1
         elif node["type"] == "choice":
             opts = []
             for opt in node["options"]:
