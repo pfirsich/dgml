@@ -4,6 +4,7 @@ import argparse
 from .compile import main as main_compile
 from .play import main as main_play
 from .util import main_ast as main_util_ast
+from .meta import main_set as main_meta_set, main_get as main_meta_get
 
 
 def add_compile_parser(subparsers):
@@ -30,9 +31,26 @@ def add_lint_parser(subparsers):
 
 
 def add_meta_parser(subparsers):
-    # dgml meta set
-    # dgml meta get --section SECTION --node-id NODE_ID --column COL --tsv --csv --json
-    # dgml meta get --column status | sort | uniq -c # status statistics
+    parser_meta = subparsers.add_parser("meta")
+    parser_meta.add_argument("metafile")
+    meta_subparsers = parser_meta.add_subparsers(required=True)
+
+    parser_get = meta_subparsers.add_parser("get")
+    parser_get.set_defaults(func=main_meta_get)
+    parser_get.add_argument("--section", "-s", action="append")
+    parser_get.add_argument("--line-id", "-l", action="append")
+    parser_get.add_argument("--no-header", "-H", action="store_true")
+    parser_get.add_argument("--csv", action="store_true")  # TODO: use csv module
+    parser_get.add_argument("--json", action="store_true")  # TODO: format?
+    parser_get.add_argument("field", nargs="+")
+
+    parser_set = meta_subparsers.add_parser("set")
+    parser_set.set_defaults(func=main_meta_set)
+    parser_set.add_argument("section")
+    parser_set.add_argument("lineid")
+    parser_set.add_argument("field")
+    parser_set.add_argument("value")
+    # dgml meta meta.json get --no-header --field status | sort | uniq -c # status statistics
     pass
 
 
@@ -60,11 +78,6 @@ def add_dot_parser(subparsers):
     pass
 
 
-def add_md_parser(subparsers):
-    # dgml md -> linearizes and prints markdown scripts (for non-developers to read, VO casting, etc.)
-    pass
-
-
 def add_util_parser(subparsers):
     # dgml util rename-node old_id new_id
 
@@ -89,7 +102,6 @@ def main():
     add_localize_parser(subparsers)
     add_play_parser(subparsers)
     add_dot_parser(subparsers)
-    add_md_parser(subparsers)
     add_util_parser(subparsers)
 
     args = parser.parse_args()
