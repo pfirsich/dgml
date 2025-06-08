@@ -2,6 +2,7 @@
 import argparse
 
 from .compile import main as main_compile
+from .play import main as main_play
 from .util import main_ast as main_util_ast
 
 
@@ -24,6 +25,7 @@ def add_lint_parser(subparsers):
     # * check every interpolated var exists in env
     # * check markup tags are properly nested
     # * lint that node ids are unique
+    # * check types in expressions
     pass
 
 
@@ -43,7 +45,12 @@ def add_localize_parser(subparsers):
 
 
 def add_play_parser(subparsers):
-    pass
+    parser_play = subparsers.add_parser("play")
+    parser_play.add_argument("input")
+    parser_play.add_argument("--env", "-e")
+    parser_play.add_argument("--section", "-s")
+    parser_play.add_argument("--node", "-n")
+    parser_play.set_defaults(func=main_play)
 
 
 def add_dot_parser(subparsers):
