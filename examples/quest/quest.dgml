@@ -1,0 +1,45 @@
+[docking_bay]
+
+IF |quest_completed| @done
+IF |quest_accepted| @active
+
+@intro   #scene:dock #mood:cheerful
+player: "Hello, weirdo!" %hello_player
+alien: "Greetings, {player}. Can I tempt you with a side errand?"
+
+@menu
+CHOICE
+  "What is this place?"  @about
+  |not quest_accepted| "Sure, what do you need?"  @offer
+  "I gotta go"  @end
+
+@about  #mood:informative #sfx:majestic
+alien: "[bold]Polestar Station[/bold] - half bazaar, half boiler room."
+GOTO @menu
+
+@offer  #mood:hopeful
+alien: "Fetch my crate of [color:magenta]glow-berries[/color] from Deck 2?"
+player: "Will do!"
+RUN |quest_accepted = true|
+GOTO @menu
+
+@active  #mood:curious
+alien: "Any luck with my [color:magenta]berries[/color]?"
+CHOICE
+  |inventory.glow_berries >= 5| "Here they are."  @turnin
+  "Not yet."  @later
+
+@later  #mood:encouraging
+alien: "Then follow the fruity scent!"
+GOTO @end
+
+@turnin  #mood:elated
+alien: "Brilliant! Take these credits."
+RUN |quest_completed = true|
+RUN |inventory.glow_berries = inventory.glow_berries - 5|
+RUN |credits = credits + 50|
+GOTO @done
+
+@done   #mood:grateful
+alien: "Thanks again. Station life tastes sweeter."
+

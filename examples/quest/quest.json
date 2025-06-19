@@ -1,0 +1,440 @@
+{
+  "build_id": "6afb70e9edb38a1cc229d0c94d92c236",
+  "speaker_ids": [
+    "player",
+    "alien"
+  ],
+  "sources": [
+    {
+      "path": "quest.dgml",
+      "hash": "8d694b432da5307e312ecab2cc5e2d62"
+    }
+  ],
+  "environment": {
+    "variables": [
+      {
+        "name": "quest_accepted",
+        "type": "bool",
+        "default": false
+      },
+      {
+        "name": "quest_completed",
+        "type": "bool",
+        "default": false
+      },
+      {
+        "name": "inventory.glow_berries",
+        "type": "int",
+        "default": 0
+      },
+      {
+        "name": "player",
+        "type": "string",
+        "default": "Joel"
+      },
+      {
+        "name": "credits",
+        "type": "int",
+        "default": 0
+      }
+    ],
+    "markup": [
+      {
+        "name": "color",
+        "parameter": ".+"
+      },
+      {
+        "name": "bold"
+      }
+    ]
+  },
+  "sections": {
+    "docking_bay": {
+      "source_file": "quest.dgml",
+      "nodes": {
+        "sdw126su": {
+          "tags": [],
+          "type": "if",
+          "cond": {
+            "type": "variable",
+            "name": "quest_completed"
+          },
+          "true_dest": "done",
+          "false_dest": "1vqehvgy"
+        },
+        "1vqehvgy": {
+          "tags": [],
+          "type": "if",
+          "cond": {
+            "type": "variable",
+            "name": "quest_accepted"
+          },
+          "true_dest": "active",
+          "false_dest": "intro"
+        },
+        "intro": {
+          "tags": [
+            "scene:dock",
+            "mood:cheerful"
+          ],
+          "type": "say",
+          "speaker_id": "player",
+          "line": {
+            "line_id": "hello_player",
+            "text": [
+              {
+                "tags": {},
+                "text": "Hello, weirdo!"
+              }
+            ]
+          },
+          "next": "p66rtaw9"
+        },
+        "p66rtaw9": {
+          "tags": [],
+          "type": "say",
+          "speaker_id": "alien",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {},
+                "text": "Greetings, "
+              },
+              {
+                "tags": {},
+                "variable": "player"
+              },
+              {
+                "tags": {},
+                "text": ". Can I tempt you with a side errand?"
+              }
+            ]
+          },
+          "next": "menu"
+        },
+        "menu": {
+          "tags": [],
+          "type": "choice",
+          "options": [
+            {
+              "line": {
+                "line_id": null,
+                "text": [
+                  {
+                    "tags": {},
+                    "text": "What is this place?"
+                  }
+                ]
+              },
+              "dest": "about"
+            },
+            {
+              "line": {
+                "line_id": null,
+                "text": [
+                  {
+                    "tags": {},
+                    "text": "Sure, what do you need?"
+                  }
+                ]
+              },
+              "dest": "offer",
+              "cond": {
+                "type": "unary_not",
+                "rhs": {
+                  "type": "variable",
+                  "name": "quest_accepted"
+                }
+              }
+            },
+            {
+              "line": {
+                "line_id": null,
+                "text": [
+                  {
+                    "tags": {},
+                    "text": "I gotta go"
+                  }
+                ]
+              },
+              "dest": "end"
+            }
+          ]
+        },
+        "about": {
+          "tags": [
+            "mood:informative",
+            "sfx:majestic"
+          ],
+          "type": "say",
+          "speaker_id": "alien",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {
+                  "bold": null
+                },
+                "text": "Polestar Station"
+              },
+              {
+                "tags": {},
+                "text": " - half bazaar, half boiler room."
+              }
+            ]
+          },
+          "next": "gn88ls5f"
+        },
+        "gn88ls5f": {
+          "tags": [],
+          "type": "goto",
+          "dest": "menu"
+        },
+        "offer": {
+          "tags": [
+            "mood:hopeful"
+          ],
+          "type": "say",
+          "speaker_id": "alien",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {},
+                "text": "Fetch my crate of "
+              },
+              {
+                "tags": {
+                  "color": "magenta"
+                },
+                "text": "glow-berries"
+              },
+              {
+                "tags": {},
+                "text": " from Deck 2?"
+              }
+            ]
+          },
+          "next": "8br5h0hy"
+        },
+        "8br5h0hy": {
+          "tags": [],
+          "type": "say",
+          "speaker_id": "player",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {},
+                "text": "Will do!"
+              }
+            ]
+          },
+          "next": "j938uu6l"
+        },
+        "j938uu6l": {
+          "tags": [],
+          "type": "run",
+          "code": {
+            "type": "assign",
+            "name": "quest_accepted",
+            "value": {
+              "type": "literal_bool",
+              "value": true
+            }
+          },
+          "next": "6fe4e4f9"
+        },
+        "6fe4e4f9": {
+          "tags": [],
+          "type": "goto",
+          "dest": "menu"
+        },
+        "active": {
+          "tags": [
+            "mood:curious"
+          ],
+          "type": "say",
+          "speaker_id": "alien",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {},
+                "text": "Any luck with my "
+              },
+              {
+                "tags": {
+                  "color": "magenta"
+                },
+                "text": "berries"
+              },
+              {
+                "tags": {},
+                "text": "?"
+              }
+            ]
+          },
+          "next": "gwtt9an8"
+        },
+        "gwtt9an8": {
+          "tags": [],
+          "type": "choice",
+          "options": [
+            {
+              "line": {
+                "line_id": null,
+                "text": [
+                  {
+                    "tags": {},
+                    "text": "Here they are."
+                  }
+                ]
+              },
+              "dest": "turnin",
+              "cond": {
+                "type": "binary_ge",
+                "lhs": {
+                  "type": "variable",
+                  "name": "inventory.glow_berries"
+                },
+                "rhs": {
+                  "type": "literal_int",
+                  "value": 5
+                }
+              }
+            },
+            {
+              "line": {
+                "line_id": null,
+                "text": [
+                  {
+                    "tags": {},
+                    "text": "Not yet."
+                  }
+                ]
+              },
+              "dest": "later"
+            }
+          ]
+        },
+        "later": {
+          "tags": [
+            "mood:encouraging"
+          ],
+          "type": "say",
+          "speaker_id": "alien",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {},
+                "text": "Then follow the fruity scent!"
+              }
+            ]
+          },
+          "next": "7p5avro8"
+        },
+        "7p5avro8": {
+          "tags": [],
+          "type": "goto",
+          "dest": "end"
+        },
+        "turnin": {
+          "tags": [
+            "mood:elated"
+          ],
+          "type": "say",
+          "speaker_id": "alien",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {},
+                "text": "Brilliant! Take these credits."
+              }
+            ]
+          },
+          "next": "1goc6r6z"
+        },
+        "1goc6r6z": {
+          "tags": [],
+          "type": "run",
+          "code": {
+            "type": "assign",
+            "name": "quest_completed",
+            "value": {
+              "type": "literal_bool",
+              "value": true
+            }
+          },
+          "next": "azk7tz2r"
+        },
+        "azk7tz2r": {
+          "tags": [],
+          "type": "run",
+          "code": {
+            "type": "assign",
+            "name": "inventory.glow_berries",
+            "value": {
+              "type": "binary_sub",
+              "lhs": {
+                "type": "variable",
+                "name": "inventory.glow_berries"
+              },
+              "rhs": {
+                "type": "literal_int",
+                "value": 5
+              }
+            }
+          },
+          "next": "bnxk9oos"
+        },
+        "bnxk9oos": {
+          "tags": [],
+          "type": "run",
+          "code": {
+            "type": "assign",
+            "name": "credits",
+            "value": {
+              "type": "binary_add",
+              "lhs": {
+                "type": "variable",
+                "name": "credits"
+              },
+              "rhs": {
+                "type": "literal_int",
+                "value": 50
+              }
+            }
+          },
+          "next": "v3pyugo8"
+        },
+        "v3pyugo8": {
+          "tags": [],
+          "type": "goto",
+          "dest": "done"
+        },
+        "done": {
+          "tags": [
+            "mood:grateful"
+          ],
+          "type": "say",
+          "speaker_id": "alien",
+          "line": {
+            "line_id": null,
+            "text": [
+              {
+                "tags": {},
+                "text": "Thanks again. Station life tastes sweeter."
+              }
+            ]
+          },
+          "next": "end"
+        }
+      },
+      "start_node": "sdw126su"
+    }
+  }
+}

@@ -1,51 +1,69 @@
 # /usr/bin/env python3
 import argparse
+import sys
 
 from .compile import main as main_compile
 from .play import main as main_play
 from .util import main_ast as main_util_ast
 from .meta import main_set as main_meta_set, main_get as main_meta_get
+from .lint import main as main_lint
 
 
 def add_compile_parser(subparsers):
     parser_compile = subparsers.add_parser("compile")
-    parser_compile.add_argument("--config", "-c")
-    parser_compile.add_argument("--meta", "-m")
-    parser_compile.add_argument("--output", "-o", default="compiled.json")
-    parser_compile.add_argument("input", nargs="+")
     parser_compile.set_defaults(func=main_compile)
+    parser_compile.add_argument("--config", "-c", help="An optional config file")
+    parser_compile.add_argument(
+        "--meta", "-m", help="Meta file to include in compiled output"
+    )
+    parser_compile.add_argument("--output", "-o", default="Compiled JSON")
+    parser_compile.add_argument("input", nargs="+", help="DGML files")
 
 
 def add_lint_parser(subparsers):
-    # --watch https://pypi.org/project/watchdog/#description
-    # --lint
-    # --fix add-line-ids
-    # exit with non-zero status on warning or error
-    # lint:
-    # * unreachable nodes
-    # * warn about GOTO after SAY
-    # * check valid speaker id
-    # * check every interpolated var exists in env
-    # * check markup tags are properly nested
-    # * lint that node ids are unique
-    # * check types in expressions
-    # * check markup is valid
-    pass
+    parser_lint = subparsers.add_parser("lint")
+    parser_lint.set_defaults(func=main_lint)
+    parser_lint.add_argument(
+        "--fix", "-f", choices=["add-line-ids"], action="append", default=[]
+    )
+    parser_lint.add_argument("--config", "-c")
+    parser_lint.add_argument(
+        "--watch",
+        "-w",
+        action="store_true",
+        help="Keep running and continously lint files that changed",
+    )
+    parser_lint.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Don't output anything if there are no errors or warnings",
+    )
+    parser_lint.add_argument("input", nargs="+", help="DGML files")
 
 
 def add_meta_parser(subparsers):
     parser_meta = subparsers.add_parser("meta")
-    parser_meta.add_argument("metafile")
+    parser_meta.add_argument("metafile", help="JSON file with meta data")
     meta_subparsers = parser_meta.add_subparsers(required=True)
 
     parser_get = meta_subparsers.add_parser("get")
     parser_get.set_defaults(func=main_meta_get)
-    parser_get.add_argument("--section", "-s", action="append")
-    parser_get.add_argument("--line-id", "-l", action="append")
-    parser_get.add_argument("--no-header", "-H", action="store_true")
+    parser_get.add_argument(
+        "--section",
+        "-s",
+        action="append",
+        help="Specify section names to filter by",
+    )
+    parser_get.add_argument(
+        "--line-id", "-l", action="append", help="Specify line ids to filter by"
+    )
+    parser_get.add_argument(
+        "--no-header", "-H", action="store_true", help="Don't include a header line"
+    )
     parser_get.add_argument("--csv", action="store_true")  # TODO: use csv module
     parser_get.add_argument("--json", action="store_true")  # TODO: format?
-    parser_get.add_argument("field", nargs="+")
+    parser_get.add_argument("field", nargs="+", help="Fields to include in the output")
 
     parser_set = meta_subparsers.add_parser("set")
     parser_set.set_defaults(func=main_meta_set)
@@ -54,7 +72,6 @@ def add_meta_parser(subparsers):
     parser_set.add_argument("field")
     parser_set.add_argument("value")
     # dgml meta meta.json get --no-header --field status | sort | uniq -c # status statistics
-    pass
 
 
 def add_localize_parser(subparsers):
@@ -63,22 +80,45 @@ def add_localize_parser(subparsers):
     # node_id;speaker;text;localization comment;translated;status
     # status is DRAFT, TRANSLATED, EDITED, REWORK, FINAL
     # dgml localize import loc/de-de.json game_de-de.csv
-    pass
+    parser_localize = subparsers.add_parser("localize")
+    parser_localize.set_defaults(
+        func=lambda args: sys.exit("This subcommand is not implemented yet")
+    )
+    localize_subparsers = parser_localize.add_subparsers(required=True)
+
+    parser_extract = localize_subparsers.add_parser(
+        "extract", help="Extract line ids from dgml file to localization JSON file"
+    )
+    parser_extract.add_argument("input", nargs="+")
+    parser_extract.add_argument("--output", "-o", help="Localization JSON")
+
+    parser_export = localize_subparsers.add_parser(
+        "export", help="Export CSV for translation from localization JSON file"
+    )
+    parser_export.add_argument("locjson")
+    parser_export.add_argument("csvfile")
+
+    parser_import = localize_subparsers.add_parser(
+        "import", help="Import CSV to localization JSON file"
+    )
+    parser_import.add_argument("locjson")
+    parser_import.add_argument("csvfile")
 
 
 def add_play_parser(subparsers):
     parser_play = subparsers.add_parser("play")
-    parser_play.add_argument("input")
-    parser_play.add_argument("--env", "-e")
-    parser_play.add_argument("--section", "-s")
-    parser_play.add_argument("--node", "-n")
     parser_play.set_defaults(func=main_play)
+    parser_play.add_argument("input")
+    parser_play.add_argument("section")
+    parser_play.add_argument(
+        "--env",
+        "-e",
+        help="A variable environment to use (JSON file). Will be written back to at exit.",
+    )
+    parser_play.add_argument("--node", "-n")
 
 
 def add_dot_parser(subparsers):
-    # dgml play [--print-code] --debug (print all node ids) or --trace
-    # # if |cond| target_true target_false # cond green or red, chosen target bold
-    # # |cond| always red or blue
     pass
 
 
@@ -111,28 +151,6 @@ def main():
     args = parser.parse_args()
 
     args.func(args)
-
-    # compile into a single json file?
-    # list meta of all files
-    # generate localization tsv for all files (merged!)
-    # also no duplicate sections in different files
-    # => some sort of project? is it too weird to impose a folder structure?
-
-    # dgml compile foo.dgml foo.json
-    # dgml lint --add-node-ids --watch foo.dgml # unreachable nodes, invalid label identifiers
-    # dgml meta update FILES.. # insert lines for new line ids
-    # dgml meta get FILES.. [--node-id] [--columns] [--csv] [--tsv]
-    # output localization CSV: dgml meta get FILES.. --csv --columns node_id,speaker,text,
-    # dgml meta set node-id key value
-    # dgml localize export foo-de.dgml-loc foo-de.tsv # likely multiple files
-    # dgml localize import foo-de.tsv foo-de.dgml-loc
-    # dgml localize status foo.dgml foo-de.dgml-loc # how many lines translated?
-    # dgml play --log log.txt --node-id NODEID SECTION
-    # dgml dot
-
-    # meta: comments (developer, localization, voice)
-    # character ids: use "pilot" and show "sir lieutenant Cavendish" in game, fixed list of chars (linting!)
-    # status: placeholder, draft, polished, edited, rework, final
 
 
 if __name__ == "__main__":

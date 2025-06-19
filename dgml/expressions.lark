@@ -43,7 +43,7 @@ assignment: IDENT "=" expr               -> assign
 INT: /[0-9]+/
 FLOAT: /[0-9]+\.[0-9]+([eE][-+]?[0-9]+)?/
 STRING: ESCAPED_STRING
-IDENT: /[_a-zA-Z][_.a-zA-Z0-9]+/
+IDENT: /[_a-zA-Z][_.a-zA-Z0-9]*/
 BOOL.2: "true" | "false" // .2 for higher priority (over IDENT)
 COMP_OP: "==" | "!=" | "<=" | "<" | ">=" | ">"
 

@@ -1,0 +1,24 @@
+speaker_ids:
+ - player
+ - alien
+environment:
+  variables:
+  - name: quest_accepted
+    type: bool
+    default: false
+  - name: quest_completed
+    type: bool
+    default: false
+  - name: inventory.glow_berries
+    type: int
+    default: 0
+  - name: player
+    type: string
+    default: "Joel"
+  - name: credits
+    type: int
+    default: 0
+  markup:
+    - name: color
+      parameter: ".+"
+    - name: bold

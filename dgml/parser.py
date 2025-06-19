@@ -1,5 +1,9 @@
-from lark import Lark, Transformer, Tree, Token, v_args
+import sys
 from dataclasses import dataclass
+
+from lark import Lark, Transformer, Tree, Token, v_args, exceptions
+
+from .colors import *
 
 
 @dataclass
@@ -8,10 +12,15 @@ class SourceLoc:
     column: int = 0
 
 
+def loc_from_meta(node):
+    return SourceLoc(node.meta.line, node.meta.column)
+
+
 @dataclass
 class NodeMeta:
-    node_id: str = None
-    tags: list = None
+    node_id: str | None
+    tags: list
+    loc: SourceLoc
 
 
 # Text
@@ -20,7 +29,7 @@ class NodeMeta:
 @dataclass
 class DialogLine:
     text: list
-    line_id: str
+    line_id: str | None
     loc: SourceLoc
 
 
@@ -37,7 +46,7 @@ class VariableFragment:
 @dataclass
 class TagOpen:
     name: str
-    parameter: str = None
+    parameter: str | None = None
 
 
 @dataclass
@@ -50,24 +59,13 @@ class TagClose:
 
 @dataclass
 class RandNode:
-    nodes: list
+    nodes: list[str]
     meta: NodeMeta
 
 
 @dataclass
 class GotoNode:
-    dest: object
-    meta: NodeMeta
-
-
-@dataclass
-class CallNode:
-    dest: object
-    meta: NodeMeta
-
-
-@dataclass
-class ReturnNode:
+    dest: str
     meta: NodeMeta
 
 
@@ -75,20 +73,20 @@ class ReturnNode:
 class Option:
     cond: object
     line: DialogLine
-    dest: object
+    dest: str
 
 
 @dataclass
 class ChoiceNode:
-    options: list
+    options: list[Option]
     meta: NodeMeta
 
 
 @dataclass
 class IfNode:
     cond: object
-    true_dest: object
-    false_dest: object
+    true_dest: str
+    false_dest: str | None
     meta: NodeMeta
 
 
@@ -102,7 +100,7 @@ class RunNode:
 class SayNode:
     speaker_id: str
     line: DialogLine
-    dest: object
+    next_node: str | None
     meta: NodeMeta
 
 
@@ -110,6 +108,7 @@ class SayNode:
 class Section:
     name: str
     nodes: list
+    loc: SourceLoc
 
 
 # Expressions
@@ -117,13 +116,13 @@ class Section:
 
 @dataclass
 class ExprUnary:
-    op: str
+    op: str  # not
     rhs: object
 
 
 @dataclass
 class ExprBinary:
-    op: str
+    op: str  # or, and, add, sub, mul, div, lt, le, eq, ne, gt, ge
     lhs: object
     rhs: object
 
@@ -146,25 +145,27 @@ class ExprAssign:
 
 def get_dgml_parser():
     if not hasattr(get_dgml_parser, "_parser"):
-        get_dgml_parser._parser = Lark.open(
+        parser = Lark.open(
             "dgml.lark",
             rel_to=__file__,
             parser="lalr",
             propagate_positions=True,
         )
-    return get_dgml_parser._parser
+        setattr(get_dgml_parser, "_parser", parser)
+    return getattr(get_dgml_parser, "_parser")
 
 
 def get_expr_parser():
     if not hasattr(get_expr_parser, "_parser"):
-        get_expr_parser._parser = Lark.open(
+        parser = Lark.open(
             "expressions.lark",
             rel_to=__file__,
             parser="lalr",
             propagate_positions=True,
             maybe_placeholders=False,
         )
-    return get_expr_parser._parser
+        setattr(get_expr_parser, "_parser", parser)
+    return getattr(get_expr_parser, "_parser")
 
 
 def is_tree(node, tree_data):
@@ -325,12 +326,12 @@ def parse_text(text):
     return fragments
 
 
-def parse_node_id(node):
+def parse_node_id(node) -> str:
     assert is_tree(node, "node_id"), lark_print(node)
     return node.children[0].value
 
 
-def parse_line_id(node):
+def parse_line_id(node) -> str:
     assert is_tree(node, "line_id"), lark_print(node)
     return node.children[0].value
 
@@ -364,16 +365,6 @@ def process_rand(meta, node):
 def process_goto(meta, node):
     assert is_tree(node, "goto_stmt"), lark_print(node)
     return GotoNode(parse_node_id(node.children[0]), meta)
-
-
-def process_call(meta, node):
-    assert is_tree(node, "call_stmt"), lark_print(node)
-    return CallNode(parse_node_id(node.children[0]), meta)
-
-
-def process_return(meta, node):
-    assert is_tree(node, "return_stmt"), lark_print(node)
-    return ReturnNode(meta)
 
 
 def process_choice(meta, node):
@@ -429,10 +420,6 @@ def process_statement(meta, node):
         return process_rand(meta, node)
     elif is_tree(node, "goto_stmt"):
         return process_goto(meta, node)
-    elif is_tree(node, "call_stmt"):
-        return process_call(meta, node)
-    elif is_tree(node, "return_stmt"):
-        return process_return(meta, node)
     elif is_tree(node, "choice_block"):
         return process_choice(meta, node)
     elif is_tree(node, "if_stmt"):
@@ -445,10 +432,10 @@ def process_statement(meta, node):
         raise AssertionError(f"Invalid statement: {node}")
 
 
-def get_meta(node):
-    assert is_tree(node, "meta"), lark_print(node)
-    meta = NodeMeta(None, [])
-    for child in node.children:
+def get_meta(meta_node, statement_node):
+    assert is_tree(meta_node, "meta"), lark_print(meta_node)
+    meta = NodeMeta(None, [], loc_from_meta(statement_node))
+    for child in meta_node.children:
         if is_tree(child, "node_id"):
             meta.node_id = parse_node_id(child)
         elif is_tree(child, "tag_list"):
@@ -458,10 +445,16 @@ def get_meta(node):
 
 def process_line(node):
     assert is_tree(node, "line"), lark_print(node)
+    if len(node.children) == 0:
+        return None
     if is_tree(node.children[0], "meta"):
-        return process_statement(get_meta(node.children[0]), node.children[1])
+        return process_statement(
+            get_meta(node.children[0], node.children[1]), node.children[1]
+        )
     else:
-        return process_statement(NodeMeta(None, []), node.children[0])
+        return process_statement(
+            NodeMeta(None, [], loc_from_meta(node.children[0])), node.children[0]
+        )
 
 
 def process_section(node):
@@ -470,10 +463,10 @@ def process_section(node):
     nodes = []
     for child in node.children[1:]:
         if is_tree(child, "line"):
-            node = process_line(child)
-            if node is not None:
-                nodes.append(node)
-    return Section(section_name, nodes)
+            line_node = process_line(child)
+            if line_node is not None:
+                nodes.append(line_node)
+    return Section(section_name, nodes, loc_from_meta(node))
 
 
 def process_dgml(node):
@@ -495,12 +488,54 @@ def generate_node_id(node):
     return random_string(8)
 
 
-def parse_dgml(source):
+@dataclass
+class FileLocation:
+    file: str
+    src_loc: SourceLoc
+
+
+@dataclass
+class Message:
+    type: str  # "error" or "warning"
+    loc: FileLocation
+    message: str
+
+
+@dataclass
+class ErrorContext:
+    messages: list
+
+
+def parse_dgml(ctx: ErrorContext, source_path: str, source: str):
     parser = get_dgml_parser()
-    tree = parser.parse(source)
+    try:
+        tree = parser.parse(source)
+    except exceptions.UnexpectedInput as exc:
+        ctx.messages.append(
+            Message(
+                "error",
+                FileLocation(source_path, SourceLoc(exc.line, exc.column)),
+                str(exc),
+            )
+        )
+        return None
     dgml = process_dgml(tree)
     for section in dgml:
         for node in section.nodes:
             if node.meta.node_id is None:
                 node.meta.node_id = generate_node_id(node)
     return dgml
+
+
+def print_errors(ctx):
+    for msg in ctx.messages:
+        if msg.type == "warning":
+            color = COLORS["yellow"]
+        elif msg.type == "error":
+            color = COLORS["red"]
+        else:
+            color = ""
+        print(
+            f"{color}{msg.type}{COLOR_RESET}{FAINT} {msg.loc.file}:{msg.loc.src_loc.line}:{msg.loc.src_loc.column}:{COLOR_RESET} {msg.message}",
+            file=sys.stderr,
+        )
