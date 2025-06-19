@@ -1,0 +1,110 @@
+%YAML 1.2
+---
+name: DGML
+file_extensions: [dgml]
+scope: source.dgml
+
+variables:
+  id: '[A-Za-z_][A-Za-z0-9_]*'
+  kw: '\b(?:RAND|GOTO|CHOICE|IF|RUN)\b'
+
+contexts:
+
+################################################################################
+#  root
+################################################################################
+  main:
+    - include: comments
+    - include: section
+    - include: speaker
+    - include: keywords
+    - include: node_id
+    - include: next_link
+    - include: tag
+    - include: code_block
+    - include: strings
+
+################################################################################
+#  comments  ; this is a comment
+################################################################################
+  comments:
+    - match: ';[^\n]*'
+      scope: comment.line.semicolon.dgml
+
+################################################################################
+#  [Section]  – make it scream by using markup.heading.*
+################################################################################
+  section:
+    - match: '(\[)\s*({{id}})\s*(\])'
+      captures:
+        1: punctuation.definition.section.begin.dgml
+        2: markup.heading.section.dgml        # <-- big, bold colour in most schemes
+        3: punctuation.definition.section.end.dgml
+
+################################################################################
+#  bert: "hello"  – use entity.name.function so it’s coloured like a fn-name
+################################################################################
+  speaker:
+    - match: '({{id}})(\s*:)'
+      captures:
+        1: entity.name.function.speaker.dgml  # very visible in default themes
+        2: punctuation.separator.key-value.dgml
+
+################################################################################
+#  RAND, GOTO … 
+################################################################################
+  keywords:
+    - match: '{{kw}}'
+      scope: keyword.control.flow.dgml
+
+################################################################################
+#  #tag
+################################################################################
+  tag:
+    - match: '#{{id}}'
+      scope: constant.other.reference.tag.dgml
+
+################################################################################
+#  -> link_target   – arrow now = keyword.operator; target = support.class
+################################################################################
+  next_link:
+    - match: '(\->)\s*({{id}})'
+      captures:
+        1: keyword.operator.arrow.dgml
+        2: support.class.destination.dgml
+
+################################################################################
+#  @node_id
+################################################################################
+  node_id:
+    - match: '@{{id}}'
+      scope: storage.modifier.node.dgml
+
+################################################################################
+#  | inline code | – give it same scope Markdown uses so it gets inline-code colour
+################################################################################
+  code_block:
+    - match: '\|'
+      scope: punctuation.definition.raw.begin.dgml
+      push:
+        - meta_scope: string.regexp.dgml    # highlights in stock schemes
+        - match: '\|'
+          scope: punctuation.definition.raw.end.dgml
+          pop: true
+        - match: '[^|]+'
+          scope: markup.raw.inline.dgml
+
+################################################################################
+#  "strings" with escapes
+################################################################################
+  strings:
+    - match: '"'
+      scope: punctuation.definition.string.begin.dgml
+      push:
+        - meta_scope: string.quoted.double.dgml
+        - match: '\\.'
+          scope: constant.character.escape.dgml
+        - match: '"'
+          scope: punctuation.definition.string.end.dgml
+          pop: true
+...
