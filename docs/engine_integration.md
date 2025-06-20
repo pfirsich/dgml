@@ -1,6 +1,6 @@
 # Engine Integration
 
-If you want, you can just translate the code in [../dgml/runtime.py] and [../dgml/play.py].
+If you want, you can just translate the code in [runtime.py](../dgml/runtime.py) and [play.py](../dgml/play.py).
 
 At the very least you should have a look and I recommend copying the general design of the Python runtime for the runtime of your choice, if possible.
 
@@ -27,7 +27,7 @@ In the "Nodes" section of the schema description, I will explain all the steps a
 
 ## Schema Description
 
-For example of all of these, please look at [../examples/quest/quest.json].
+For example of all of these, please look at [quest.json](../examples/quest/quest.json).
 
 ### Top-Level Object
 
