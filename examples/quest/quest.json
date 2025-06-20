@@ -86,7 +86,11 @@
                 "tags": {},
                 "text": "Hello, weirdo!"
               }
-            ]
+            ],
+            "meta": {
+              "status": "draft",
+              "comment.dev": "This is an example comment so you can test some tools"
+            }
           },
           "next": "1ff1c07abebb6b7a"
         },

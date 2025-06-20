@@ -1,0 +1,8 @@
+{
+  "docking_bay": {
+    "hello_player": {
+      "status": "draft",
+      "comment.dev": "This is an example comment so you can test some tools"
+    }
+  }
+}
