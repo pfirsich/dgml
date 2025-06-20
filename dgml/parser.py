@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from dataclasses import dataclass
 
@@ -27,14 +29,7 @@ class NodeMeta:
 
 
 @dataclass
-class DialogLine:
-    text: list
-    line_id: str | None
-    loc: SourceLoc
-
-
-@dataclass
-class TextFragment:
+class LiteralFragment:
     text: str
 
 
@@ -54,6 +49,65 @@ class TagClose:
     name: str
 
 
+LineFragment = LiteralFragment | VariableFragment | TagOpen | TagClose
+
+
+@dataclass
+class DialogLine:
+    text: list[LineFragment]
+    raw_text: str
+    line_id: str | None
+    loc: SourceLoc
+
+
+# Expressions
+
+
+@dataclass
+class ExprUnary:
+    op: str  # not
+    rhs: "ExprNode"
+
+
+@dataclass
+class ExprBinary:
+    op: str  # or, and, add, sub, mul, div, lt, le, eq, ne, gt, ge
+    lhs: "ExprNode"
+    rhs: "ExprNode"
+
+
+@dataclass
+class ExprIdent:
+    name: str
+
+
+@dataclass
+class ExprLiteral:
+    value: bool | int | float | str
+
+
+@dataclass
+class ExprAssign:
+    name: str
+    value: "ExprNode"
+
+
+# Assign is missing intentionally
+ExprNode = ExprUnary | ExprBinary | ExprIdent | ExprLiteral
+
+
+@dataclass
+class Expression:
+    ast: ExprNode
+    raw: str
+
+
+@dataclass
+class Assignment:
+    ast: ExprAssign
+    raw: str
+
+
 # Dialogue Nodes
 
 
@@ -71,7 +125,7 @@ class GotoNode:
 
 @dataclass
 class Option:
-    cond: object
+    cond: Expression | None
     line: DialogLine
     dest: str
 
@@ -84,7 +138,7 @@ class ChoiceNode:
 
 @dataclass
 class IfNode:
-    cond: object
+    cond: Expression
     true_dest: str
     false_dest: str | None
     meta: NodeMeta
@@ -92,7 +146,7 @@ class IfNode:
 
 @dataclass
 class RunNode:
-    code: object
+    code: Assignment
     meta: NodeMeta
 
 
@@ -104,43 +158,14 @@ class SayNode:
     meta: NodeMeta
 
 
+Node = RandNode | GotoNode | ChoiceNode | IfNode | RunNode | SayNode
+
+
 @dataclass
 class Section:
     name: str
-    nodes: list
+    nodes: list[Node]
     loc: SourceLoc
-
-
-# Expressions
-
-
-@dataclass
-class ExprUnary:
-    op: str  # not
-    rhs: object
-
-
-@dataclass
-class ExprBinary:
-    op: str  # or, and, add, sub, mul, div, lt, le, eq, ne, gt, ge
-    lhs: object
-    rhs: object
-
-
-@dataclass
-class ExprIdent:
-    name: str
-
-
-@dataclass
-class ExprLiteral:
-    value: object  # int, float, bool, string
-
-
-@dataclass
-class ExprAssign:
-    name: str
-    value: object
 
 
 def get_dgml_parser():
@@ -195,10 +220,8 @@ compare_map = {
 }
 
 
-def process_expr(node):
-    if is_tree(node, "assign"):
-        return ExprAssign(node.children[0].value, process_expr(node.children[1]))
-    elif is_tree(node, "or_op"):
+def process_expr(node) -> ExprNode:
+    if is_tree(node, "or_op"):
         return ExprBinary(
             "or",
             process_expr(node.children[0]),
@@ -261,15 +284,27 @@ def process_expr(node):
         raise AssertionError(f"Invalid expr: {node}")
 
 
-def parse_expr(expr):
+def parse_expr(expr) -> Expression:
     parser = get_expr_parser()
     tree = parser.parse(expr)
-    return process_expr(tree)
+    return Expression(process_expr(tree), expr)
+
+
+def process_assignment(node) -> ExprAssign:
+    if not is_tree(node, "assign"):
+        raise ValueError("Expression must be assignment")
+    return ExprAssign(node.children[0].value, process_expr(node.children[1]))
+
+
+def parse_assignment(assign_str) -> Assignment:
+    parser = get_expr_parser()
+    tree = parser.parse(assign_str)
+    return Assignment(process_assignment(tree), assign_str)
 
 
 def add_text(fragments, text):
-    if len(fragments) == 0 or not isinstance(fragments[-1], TextFragment):
-        fragments.append(TextFragment(text))
+    if len(fragments) == 0 or not isinstance(fragments[-1], LiteralFragment):
+        fragments.append(LiteralFragment(text))
     else:
         fragments[-1].text += text
 
@@ -346,8 +381,10 @@ def parse_dialog_line(node):
     line_id = None
     if len(node.children) > 1:
         line_id = parse_line_id(node.children[1])
+    raw_text = node.children[0].value[1:-1]
     return DialogLine(
-        parse_text(node.children[0].value[1:-1]),
+        parse_text(raw_text),
+        raw_text,
         line_id,
         SourceLoc(node.meta.line, node.meta.end_column),
     )
@@ -399,7 +436,7 @@ def process_if(meta, node):
 
 def process_run(meta, node):
     assert is_tree(node, "run_stmt"), lark_print(node)
-    return RunNode(parse_expr(node.children[0].children[0].value), meta)
+    return RunNode(parse_assignment(node.children[0].children[0].value), meta)
 
 
 def process_say(meta, node):

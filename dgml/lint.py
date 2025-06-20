@@ -421,7 +421,7 @@ def lint_expr_types(ctx, config, sources):
                     if isinstance(node, ChoiceNode):
                         for opt in node.options:
                             if opt.cond:
-                                if get_expr_type(env_vars, opt.cond) != "bool":
+                                if get_expr_type(env_vars, opt.cond.ast) != "bool":
                                     ctx.messages.append(
                                         Message(
                                             "error",
@@ -430,12 +430,12 @@ def lint_expr_types(ctx, config, sources):
                                         )
                                     )
                     elif isinstance(node, IfNode):
-                        if get_expr_type(env_vars, node.cond) != "bool":
+                        if get_expr_type(env_vars, node.cond.ast) != "bool":
                             ctx.messages.append(
                                 Message("error", node_loc, f"Expression must be bool")
                             )
                     elif isinstance(node, RunNode):
-                        if get_expr_type(env_vars, node.code) != "assign":
+                        if get_expr_type(env_vars, node.code.ast) != "assign":
                             ctx.messages.append(
                                 Message(
                                     "error", node_loc, f"Expression must be assignment"

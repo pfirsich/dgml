@@ -43,7 +43,7 @@ def text_to_json(text: list) -> list:
     current_tags = {}
 
     for frag in text:
-        if isinstance(frag, parser.TextFragment):
+        if isinstance(frag, parser.LiteralFragment):
             ret.append({"tags": current_tags, "text": frag.text})
         elif isinstance(frag, parser.VariableFragment):
             ret.append({"tags": current_tags, "variable": frag.variable_name})
@@ -140,7 +140,7 @@ def main(args):
                             }
                         )
                         if opt.cond:
-                            opts[-1]["cond"] = expr_to_json(opt.cond)
+                            opts[-1]["cond"] = expr_to_json(opt.cond.ast)
                     nodes[node.meta.node_id] = make_node(node, "choice", options=opts)
                 elif isinstance(node, parser.IfNode):
                     false_dest = (
@@ -149,14 +149,14 @@ def main(args):
                     nodes[node.meta.node_id] = make_node(
                         node,
                         "if",
-                        cond=expr_to_json(node.cond),
+                        cond=expr_to_json(node.cond.ast),
                         true_dest=node.true_dest,
                         false_dest=false_dest,
                     )
 
                 elif isinstance(node, parser.RunNode):
                     nodes[node.meta.node_id] = make_node(
-                        node, "run", code=expr_to_json(node.code), next=next_node
+                        node, "run", code=expr_to_json(node.code.ast), next=next_node
                     )
 
                 elif isinstance(node, parser.SayNode):
