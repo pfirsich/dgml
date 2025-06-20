@@ -6,6 +6,8 @@ At the very least you should have a look and I recommend copying the general des
 
 Essentially the task of writing an engine integration consists of consuming the compiled JSON and traversing the dialogue graph.
 
+Note: The compiled JSON is not intended to be version controlled, [quest.json](../examples/quest/quest.json) is an exception so it can be linked from the documentation.
+
 A schema of the output JSON can be found at the end of this document.
 
 ## General Design
@@ -63,7 +65,7 @@ Keys:
 ### Section
 
 * `source_file` (string): The path to the source file the section was defined in.
-* `nodes` (ditionary of Nodes): see below, keyed by the node's ID.
+* `nodes` (ditionary of Nodes): see below, keyed by the node's ID. If no node ID was specified in the DGML file, a random one will be generated.
 * `start_node` (string): The node ID of the first node of a section.
 
 ### Node

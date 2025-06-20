@@ -52,7 +52,7 @@
     "docking_bay": {
       "source_file": "quest.dgml",
       "nodes": {
-        "sdw126su": {
+        "42e650b6f7e5ec8c": {
           "tags": [],
           "type": "if",
           "cond": {
@@ -60,9 +60,9 @@
             "name": "quest_completed"
           },
           "true_dest": "done",
-          "false_dest": "1vqehvgy"
+          "false_dest": "ab233337cb1058f4"
         },
-        "1vqehvgy": {
+        "ab233337cb1058f4": {
           "tags": [],
           "type": "if",
           "cond": {
@@ -88,9 +88,9 @@
               }
             ]
           },
-          "next": "p66rtaw9"
+          "next": "1ff1c07abebb6b7a"
         },
-        "p66rtaw9": {
+        "1ff1c07abebb6b7a": {
           "tags": [],
           "type": "say",
           "speaker_id": "alien",
@@ -184,9 +184,9 @@
               }
             ]
           },
-          "next": "gn88ls5f"
+          "next": "bb38b56f182c0306"
         },
-        "gn88ls5f": {
+        "bb38b56f182c0306": {
           "tags": [],
           "type": "goto",
           "dest": "menu"
@@ -216,9 +216,9 @@
               }
             ]
           },
-          "next": "8br5h0hy"
+          "next": "a3bc3ca2e087bafa"
         },
-        "8br5h0hy": {
+        "a3bc3ca2e087bafa": {
           "tags": [],
           "type": "say",
           "speaker_id": "player",
@@ -231,9 +231,9 @@
               }
             ]
           },
-          "next": "j938uu6l"
+          "next": "aaee57b0f14dd8f9"
         },
-        "j938uu6l": {
+        "aaee57b0f14dd8f9": {
           "tags": [],
           "type": "run",
           "code": {
@@ -244,9 +244,9 @@
               "value": true
             }
           },
-          "next": "6fe4e4f9"
+          "next": "d0f9ac93964c78a9"
         },
-        "6fe4e4f9": {
+        "d0f9ac93964c78a9": {
           "tags": [],
           "type": "goto",
           "dest": "menu"
@@ -276,9 +276,9 @@
               }
             ]
           },
-          "next": "gwtt9an8"
+          "next": "e8c6b458fec57ddf"
         },
-        "gwtt9an8": {
+        "e8c6b458fec57ddf": {
           "tags": [],
           "type": "choice",
           "options": [
@@ -334,9 +334,9 @@
               }
             ]
           },
-          "next": "7p5avro8"
+          "next": "a5dbe082e6d52eb2"
         },
-        "7p5avro8": {
+        "a5dbe082e6d52eb2": {
           "tags": [],
           "type": "goto",
           "dest": "end"
@@ -356,9 +356,9 @@
               }
             ]
           },
-          "next": "1goc6r6z"
+          "next": "e66710687f1472a8"
         },
-        "1goc6r6z": {
+        "e66710687f1472a8": {
           "tags": [],
           "type": "run",
           "code": {
@@ -369,9 +369,9 @@
               "value": true
             }
           },
-          "next": "azk7tz2r"
+          "next": "1cfdcca9805f57d5"
         },
-        "azk7tz2r": {
+        "1cfdcca9805f57d5": {
           "tags": [],
           "type": "run",
           "code": {
@@ -389,9 +389,9 @@
               }
             }
           },
-          "next": "bnxk9oos"
+          "next": "6ea01f5a96558ecb"
         },
-        "bnxk9oos": {
+        "6ea01f5a96558ecb": {
           "tags": [],
           "type": "run",
           "code": {
@@ -409,9 +409,9 @@
               }
             }
           },
-          "next": "v3pyugo8"
+          "next": "d1b367e10b728dc3"
         },
-        "v3pyugo8": {
+        "d1b367e10b728dc3": {
           "tags": [],
           "type": "goto",
           "dest": "done"
@@ -434,7 +434,7 @@
           "next": "end"
         }
       },
-      "start_node": "sdw126su"
+      "start_node": "42e650b6f7e5ec8c"
     }
   }
 }

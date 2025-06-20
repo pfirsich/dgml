@@ -514,15 +514,38 @@ def process_dgml(node):
     return sections
 
 
-def random_string(n):
-    import random
-    import string
+def get_node_signature(section_name, node: Node):
+    if isinstance(node, RandNode):
+        return f"{section_name}:RAND:{':'.join(node.nodes)}"
+    elif isinstance(node, GotoNode):
+        return f"{section_name}:GOTO:{node.dest}"
+    elif isinstance(node, ChoiceNode):
+        return f"{section_name}:CHOICE:" + ":".join(
+            f"{o.cond.raw if o.cond else ''}:{o.line.raw_text}:{o.dest}"
+            for o in node.options
+        )
+    elif isinstance(node, IfNode):
+        return f"{section_name}:IF:{node.cond.raw}:{node.true_dest}:{node.false_dest}"
+    elif isinstance(node, RunNode):
+        return f"{section_name}:RUN:{node.code.raw}"
+    elif isinstance(node, SayNode):
+        return f"{section_name}:SAY:{node.speaker_id}:{node.line.raw_text}"
+    else:
+        raise AssertionError("Invalid node type")
 
-    return "".join(random.choices(string.ascii_lowercase + string.digits, k=n))
 
+def generate_node_ids(dgml):
+    import hashlib
 
-def generate_node_id(node):
-    return random_string(8)
+    node_sig_counts = {}
+    for section in dgml:
+        for node in section.nodes:
+            if node.meta.node_id is None:
+                node_sig = get_node_signature(section.name, node)
+                node_sig_counts[node_sig] = node_sig_counts.get(node_sig, 0) + 1
+                node.meta.node_id = hashlib.md5(
+                    f"{node_sig}:{node_sig_counts[node_sig]}".encode("utf-8")
+                ).hexdigest()[:16]
 
 
 @dataclass
@@ -556,11 +579,11 @@ def parse_dgml(ctx: ErrorContext, source_path: str, source: str):
             )
         )
         return None
+
     dgml = process_dgml(tree)
-    for section in dgml:
-        for node in section.nodes:
-            if node.meta.node_id is None:
-                node.meta.node_id = generate_node_id(node)
+
+    generate_node_ids(dgml)
+
     return dgml
 
 
