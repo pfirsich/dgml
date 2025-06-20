@@ -183,7 +183,7 @@ def main(args):
 
     invalid_meta = []
     for section_name, section_meta in meta.items():
-        invalid_meta.extend(list(section_meta.keys()))
+        invalid_meta.extend(f"{section_name}::{key}" for key in section_meta.keys())
 
     if len(invalid_meta) > 0:
         sys.exit(
