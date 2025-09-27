@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
     uint32_t length; // does not include null
-    char data[1]; // includes null
+    char data[1]; // flexible array member, includes null
 } dgmlb_string;
 
 typedef struct {
