@@ -178,8 +178,9 @@ def main(args):
             sections[section.name] = {
                 "source_file": src.path,
                 "nodes": nodes,
-                "start_node": section.nodes[0].meta.node_id,
             }
+            if len(section.nodes) > 0:
+                sections[section.name]["start_node"] = section.nodes[0].meta.node_id
 
     invalid_meta = []
     for section_name, section_meta in meta.items():
