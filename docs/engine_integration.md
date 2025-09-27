@@ -1,5 +1,12 @@
 # Engine Integration
 
+## Existing Runtimes
+
+* Python: dgml can be imported as a module and used like shown in [play.py](../dgml/play.py).
+* C: [dgmlrt-c](../dgmlrt-c/).
+
+## Introduction
+
 If you want, you can just translate the code in [runtime.py](../dgml/runtime.py) and [play.py](../dgml/play.py).
 
 At the very least you should have a look and I recommend copying the general design of the Python runtime for the runtime of your choice, if possible.
@@ -7,6 +14,8 @@ At the very least you should have a look and I recommend copying the general des
 Essentially the task of writing an engine integration consists of consuming the compiled JSON and traversing the dialogue graph.
 
 Note: The compiled JSON is not intended to be version controlled, [quest.json](../examples/quest/quest.json) is an exception so it can be linked from the documentation.
+
+Alternatively you can compile to binary `.dgmlb` and simply memory map the data (see [dgmlb-test.cpp](../dgmlrt-c/dgmlb-test.cpp)).
 
 A schema of the output JSON can be found at the end of this document.
 

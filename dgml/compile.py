@@ -8,6 +8,7 @@ import yaml
 from . import parser
 from .config import load_config
 from .lint import lint
+from .dgmlb_writer import write_binary
 
 
 @dataclass
@@ -205,5 +206,8 @@ def main(args):
         "sections": sections,
     }
 
-    with open(args.output, "w") as f:
-        json.dump(data, f, indent=2)
+    if args.binary:
+        write_binary(data, args.output)
+    else:
+        with open(args.output, "w") as f:
+            json.dump(data, f, indent=2)

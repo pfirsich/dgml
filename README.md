@@ -12,6 +12,7 @@ You author your dialogues in DGML files and compile them (and other files includ
 * Rich text & variable interpolation: inline styling with markup tags like `[bold]...[/bold]` or parameterized tags `[color:ff0000]...[/color]` (customizable).
 * Custom node metadata: e.g. `#mood:happy` or `#sfx:explosion` to attach any metadata to dialogue nodes
 * Engine-agnostic JSON output: compile everything to a single JSON file designed for a simple engine runtime for easy integration.
+* Alternatively there is a binary output format, which can simply be memory-mapped (see [dgmlb.h](dgmlrt-c/dgmlb.h) and [dgmlb-test.cpp](dgmlrt-c/dgmlb-test.cpp)).
 * Stable line ids: assign unique line IDs (`%line_id`) (or have them automatically inserted) for localization and voice overs.
 * Metadata and localization (wip)
 * CLI toolkit:
@@ -118,13 +119,13 @@ alien: Then follow the fruity scent!
 
 Dialogue is authored in DGML files, which can contain any number of "sections" (self-contained dialogue-trees). `dgml lint` can be used to lint these files during editing and `dgml play` can be used to test them outside of the game engine.
 
-For more information see: [authoring_dialogue.md](docs/authoring_dialogue.md)
+For more information see: [Authoring Dialogue](docs/authoring_dialogue.md)
 
 ## Engine Integration
 
 All DGML files, metadata, localization information and anything else will be compiled into a single JSON file that pre-processes as much as makes sense to make it as easy as possible to implement a runtime in any language or engine.
 
-For more information see: [engine_integration](docs/engine_integration.md)
+For more information see: [Engine Integration](docs/engine_integration.md)
 
 ## TODO
 * weights on rand: `RAND 3*hello_bert_1 hello_bert_2`

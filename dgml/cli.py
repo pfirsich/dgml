@@ -16,7 +16,10 @@ def add_compile_parser(subparsers):
     parser_compile.add_argument(
         "--meta", "-m", help="Meta file to include in compiled output"
     )
-    parser_compile.add_argument("--output", "-o", default="Compiled JSON")
+    parser_compile.add_argument("--output", "-o", help="Compiled JSON")
+    parser_compile.add_argument(
+        "--binary", "-b", help="Output binary dgmlb file instead", action="store_true"
+    )
     parser_compile.add_argument("input", nargs="+", help="DGML files")
 
 
