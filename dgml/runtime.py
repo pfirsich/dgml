@@ -140,9 +140,7 @@ class Vm:
 
             # Interactive nodes
             if node_type == "say":
-                self._current_node = node["next"]
-
-                return AdvanceResult(
+                res = AdvanceResult(
                     SayNode(
                         self._current_node,
                         node["tags"],
@@ -151,6 +149,10 @@ class Vm:
                     ),
                     changed_vars,
                 )
+
+                self._current_node = node["next"]
+
+                return res
             elif node_type == "choice":
                 options = []
                 for option in node["options"]:
