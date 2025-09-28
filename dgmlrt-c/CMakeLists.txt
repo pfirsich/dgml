@@ -15,7 +15,7 @@ if(DGMLRT_ENABLE_ASAN)
 endif()
 
 add_library(dgmlrt dgmlrt.cpp)
-target_include_directories(dgmlrt PUBLIC include/)
+target_include_directories(dgmlrt PUBLIC .)
 dgmlrt_set_wall(dgmlrt)
 dgmlrt_set_no_exceptions(dgmlrt)
 dgmlrt_set_no_rtti(dgmlrt)
