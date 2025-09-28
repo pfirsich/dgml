@@ -4,6 +4,7 @@
 
 * Python: dgml can be imported as a module and used like shown in [play.py](../dgml/play.py).
 * C: [dgmlrt-c](../dgmlrt-c/).
+* Lua: This runtime exists and works, but I have not published it. Contact me if you want it.
 
 ## Introduction
 
