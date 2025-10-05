@@ -13,7 +13,7 @@ typedef struct {
     size_t len;
 } dgmlrt_string;
 
-#define DGMLRT_LITERAL(s) ((dgmlrt_string) { s, sizeof(s) - 1 })
+#define DGMLRT_LITERAL(s) { s, sizeof(s) - 1 }
 dgmlrt_string dgmlrt_zstr(const char* str); // calls strlen for length
 
 // like malloc, this needs to return memory that is sufficiently aligned for any kind of variable
