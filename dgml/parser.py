@@ -275,7 +275,7 @@ def process_expr(node) -> ExprNode:
     elif is_tree(node, "string_literal"):
         return ExprLiteral(node.children[0].value[1:-1])
     elif is_tree(node, "bool_literal"):
-        return ExprLiteral(bool(node.children[0].value))
+        return ExprLiteral(node.children[0].value == "true")
     elif is_tree(node, "paren"):
         return process_expr(node.children[0])
     elif is_tree(node, "ident"):
